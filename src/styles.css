@@ -5,8 +5,8 @@
    THEME VARIABLES
    ══════════════════════════════════════════ */
 
-/* ── Windows 11 Light ── */
-[data-os="windows"][data-theme="light"] {
+/* ── Light ── */
+[data-theme="light"] {
   --bg: #f3f3f3;
   --surface: #ffffff;
   --surface-hover: #f9f9f9;
@@ -29,8 +29,8 @@
   --input-bg: #ffffff;
 }
 
-/* ── Windows 11 Dark ── */
-[data-os="windows"][data-theme="dark"] {
+/* ── Dark ── */
+[data-theme="dark"] {
   --bg: #202020;
   --surface: #2d2d2d;
   --surface-hover: #333333;
@@ -53,62 +53,10 @@
   --input-bg: #1a1a1a;
 }
 
-/* ── macOS Light ── */
-[data-os="mac"][data-theme="light"] {
-  --bg: #f0f0f0;
-  --surface: #ffffff;
-  --surface-hover: #f7f7f7;
-  --border: #e0e0e0;
-  --border-strong: #cbcbcb;
-  --text: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --text-muted: #aeaeb2;
-  --accent: #007aff;
-  --accent-hover: #0066d6;
-  --accent-subtle: rgba(0, 122, 255, .06);
-  --danger: #ff3b30;
-  --danger-hover: #d9291f;
-  --titlebar-bg: rgba(246, 246, 246, .8);
-  --card-shadow: 0 1px 3px rgba(0,0,0,.06);
-  --card-shadow-hover: 0 4px 12px rgba(0,0,0,.08);
-  --modal-shadow: 0 12px 40px rgba(0,0,0,.15);
-  --overlay-bg: rgba(0,0,0,.25);
-  --scrollbar-thumb: #c5c5c5;
-  --input-bg: #ffffff;
-}
-
-/* ── macOS Dark ── */
-[data-os="mac"][data-theme="dark"] {
-  --bg: #1e1e1e;
-  --surface: #2a2a2a;
-  --surface-hover: #323232;
-  --border: #3a3a3a;
-  --border-strong: #484848;
-  --text: #f5f5f7;
-  --text-secondary: #a1a1a6;
-  --text-muted: #6e6e73;
-  --accent: #0a84ff;
-  --accent-hover: #409cff;
-  --accent-subtle: rgba(10, 132, 255, .1);
-  --danger: #ff453a;
-  --danger-hover: #ff6961;
-  --titlebar-bg: rgba(30, 30, 30, .85);
-  --card-shadow: 0 1px 4px rgba(0,0,0,.25);
-  --card-shadow-hover: 0 4px 16px rgba(0,0,0,.35);
-  --modal-shadow: 0 12px 40px rgba(0,0,0,.55);
-  --overlay-bg: rgba(0,0,0,.5);
-  --scrollbar-thumb: #555;
-  --input-bg: #1a1a1a;
-}
-
-/* ── Shared geometry ── */
+/* ── Geometry ── */
 :root {
   --radius: 8px;
   --radius-sm: 6px;
-}
-[data-os="mac"] {
-  --radius: 10px;
-  --radius-sm: 8px;
 }
 
 /* ══════════════════════════════════════════
@@ -124,34 +72,29 @@ body {
   flex-direction: column;
   overflow: hidden;
   user-select: none;
+}
+
+/* Only animate after first paint */
+body.ready {
   transition: background .25s, color .25s;
 }
 
-[data-os="mac"] body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-}
-
 /* ══════════════════════════════════════════
-   TITLEBAR — Windows 11
+   TITLEBAR
    ══════════════════════════════════════════ */
 
 #titlebar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 40px;
   background: var(--titlebar-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  position: relative;
 }
 
-/* -- Windows layout: [drag area ... controls on right] -- */
-[data-os="windows"] #titlebar {
-  justify-content: space-between;
-}
-
-[data-os="windows"] .titlebar-drag {
+.titlebar-drag {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -170,8 +113,7 @@ body {
   flex-shrink: 0;
 }
 
-[data-os="windows"] .win-controls { display: flex; height: 100%; }
-[data-os="windows"] .mac-controls { display: none; }
+.win-controls { display: flex; height: 100%; }
 
 .win-btn {
   width: 46px;
@@ -189,71 +131,6 @@ body {
 .win-btn svg { width: 10px; height: 10px; }
 .win-btn:hover { background: var(--surface-hover); }
 .win-close:hover { background: #c42b1c; color: #fff; }
-
-[data-theme="dark"] .win-close:hover { background: #c42b1c; color: #fff; }
-
-/* -- macOS layout: [traffic lights ... title centered ... ] -- */
-[data-os="mac"] #titlebar {
-  justify-content: center;
-}
-
-[data-os="mac"] .titlebar-drag {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 80px;
-  padding-right: 80px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  -webkit-app-region: drag;
-  pointer-events: none;
-}
-
-[data-os="mac"] .win-controls { display: none; }
-[data-os="mac"] .mac-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-left: 14px;
-  padding-right: 14px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  z-index: 2;
-  -webkit-app-region: no-drag;
-}
-
-.traffic-light {
-  width: 12px;
-  height: 12px;
-  min-width: 12px;
-  min-height: 12px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: filter .15s;
-  padding: 0;
-}
-.traffic-light:hover { filter: brightness(1.15); }
-.tl-close { background: #ff5f57; }
-.tl-minimize { background: #febc2e; }
-.tl-maximize { background: #28c840; }
-
-/* traffic light icons on hover */
-.mac-controls:hover .traffic-light svg { opacity: 1; }
-.traffic-light svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity .12s;
-}
 
 /* ══════════════════════════════════════════
    TOOLBAR
@@ -301,7 +178,7 @@ body {
 }
 #search::placeholder { color: var(--text-muted); }
 
-/* ── Action buttons row ── */
+/* ── Action buttons ── */
 .toolbar-actions {
   display: flex;
   align-items: center;
@@ -327,11 +204,6 @@ body {
   color: var(--text);
 }
 .btn-icon svg { width: 16px; height: 16px; }
-.btn-icon.active {
-  background: var(--accent-subtle);
-  border-color: var(--accent);
-  color: var(--accent);
-}
 
 .toolbar-sep {
   width: 1px;
@@ -346,7 +218,7 @@ body {
   gap: 6px;
   padding: 7px 14px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   background: var(--accent);
   color: #fff;
   font-size: 13px;
@@ -357,7 +229,6 @@ body {
   white-space: nowrap;
 }
 #btn-new svg { width: 14px; height: 14px; }
-[data-os="windows"] #btn-new { border-radius: 4px; }
 #btn-new:hover { background: var(--accent-hover); }
 #btn-new:active { transform: scale(.97); }
 
@@ -408,10 +279,6 @@ body {
 .note-card:hover {
   transform: translateY(-1px);
   box-shadow: var(--card-shadow-hover);
-}
-
-[data-os="mac"] .note-card {
-  border-radius: var(--radius);
 }
 
 .note-card .note-title {
@@ -525,8 +392,6 @@ body {
   animation: slideUp .15s ease;
 }
 
-[data-os="mac"] #modal { border-radius: 12px; }
-
 .modal-header {
   display: flex;
   align-items: center;
@@ -618,7 +483,7 @@ body {
 .btn-save {
   padding: 6px 20px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   background: var(--accent);
   color: #fff;
   font-size: 12px;
@@ -627,7 +492,6 @@ body {
   cursor: pointer;
   transition: background .15s;
 }
-[data-os="windows"] .btn-save { border-radius: 4px; }
 .btn-save:hover { background: var(--accent-hover); }
 
 .hidden { display: none !important; }

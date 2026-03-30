@@ -28,22 +28,39 @@ const overlay     = document.getElementById('modal-overlay');
 const modalTitle  = document.getElementById('modal-title');
 const modalContent= document.getElementById('modal-content');
 const colorPicker = document.getElementById('color-picker');
+const winMaxBtn   = document.getElementById('win-max');
 
 /* ── SVG Icons ── */
 const ICONS = {
-  // Sun
   sun: `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`,
-  // Moon
   moon: `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`,
-  // Pin
   pin: `<path d="M12 2L12 10M8 10H16L14.5 16H9.5L8 10ZM10 16L9 22M14 16L15 22"/>`,
+  maximize: `<rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/>`,
+  restore: `<rect x="2" y="0" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1"/><rect x="0" y="2" width="8" height="8" fill="var(--surface, #fff)" stroke="currentColor" stroke-width="1"/>`,
 };
+
+/* ── Helpers ── */
+const _escEl = document.createElement('div');
+function esc(str) {
+  _escEl.textContent = str;
+  return _escEl.innerHTML;
+}
+
+let _searchTimer = null;
+function debounce(fn, ms) {
+  return (...args) => {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => fn(...args), ms);
+  };
+}
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 /* ── Init ── */
 async function init() {
-  notes = await window.api.loadNotes();
   applyTheme();
   buildColorPicker();
+  notes = await window.api.loadNotes();
   render();
   bindEvents();
 }
@@ -61,8 +78,13 @@ function toggleTheme() {
 }
 
 function updateThemeIcon() {
-  const el = document.getElementById('icon-theme');
-  el.innerHTML = currentTheme === 'light' ? ICONS.moon : ICONS.sun;
+  document.getElementById('icon-theme').innerHTML = currentTheme === 'light' ? ICONS.moon : ICONS.sun;
+}
+
+/* ── Maximize icon ── */
+function updateMaximizeIcon(isMaximized) {
+  winMaxBtn.querySelector('svg').innerHTML = isMaximized ? ICONS.restore : ICONS.maximize;
+  winMaxBtn.title = isMaximized ? 'Restore' : 'Maximize';
 }
 
 /* ── Render ── */
@@ -76,17 +98,15 @@ function render(filter = '') {
       return b.updatedAt - a.updatedAt;
     });
 
-  grid.innerHTML = '';
   emptyState.classList.toggle('hidden', filtered.length > 0 || !!query);
 
-  filtered.forEach(note => {
+  const frag = document.createDocumentFragment();
+
+  for (const note of filtered) {
     const card = document.createElement('div');
     card.className = 'note-card';
     card.style.setProperty('--note-color', note.color || COLORS[0].hex);
     card.dataset.id = note.id;
-
-    const date = new Date(note.updatedAt);
-    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     card.innerHTML = `
       <button class="note-pin ${note.pinned ? 'pinned' : ''}" data-pin="${note.id}" title="Pin note">
@@ -94,29 +114,29 @@ function render(filter = '') {
       </button>
       <div class="note-title">${esc(note.title || 'Untitled')}</div>
       <div class="note-preview">${esc(note.content || '')}</div>
-      <div class="note-date">${dateStr}</div>
+      <div class="note-date">${dateFormatter.format(new Date(note.updatedAt))}</div>
     `;
 
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.note-pin')) return;
-      openModal(note.id);
-    });
+    frag.appendChild(card);
+  }
 
-    grid.appendChild(card);
-  });
+  grid.innerHTML = '';
+  grid.appendChild(frag);
 }
 
 /* ── Color Picker ── */
 function buildColorPicker() {
-  colorPicker.innerHTML = '';
-  COLORS.forEach(c => {
+  const frag = document.createDocumentFragment();
+  for (const c of COLORS) {
     const dot = document.createElement('button');
     dot.className = 'color-dot';
     dot.style.background = c.hex;
     dot.dataset.color = c.hex;
     dot.title = c.name;
-    colorPicker.appendChild(dot);
-  });
+    frag.appendChild(dot);
+  }
+  colorPicker.innerHTML = '';
+  colorPicker.appendChild(frag);
 }
 
 /* ── Modal ── */
@@ -128,9 +148,9 @@ function openModal(id = null) {
   modalContent.value = note?.content || '';
 
   const color = note?.color || COLORS[0].hex;
-  colorPicker.querySelectorAll('.color-dot').forEach(d => {
+  for (const d of colorPicker.querySelectorAll('.color-dot')) {
     d.classList.toggle('active', d.dataset.color === color);
-  });
+  }
 
   document.getElementById('modal-delete').classList.toggle('hidden', !id);
   overlay.classList.remove('hidden');
@@ -200,13 +220,19 @@ async function togglePin(id) {
 function bindEvents() {
   // Windows titlebar
   document.getElementById('win-min').addEventListener('click', () => window.api.minimize());
-  document.getElementById('win-max').addEventListener('click', () => window.api.maximize());
+  winMaxBtn.addEventListener('click', () => window.api.maximize());
   document.getElementById('win-close').addEventListener('click', () => window.api.close());
+
+  // Maximize state sync
+  window.api.isMaximized().then(updateMaximizeIcon);
+  window.api.onMaximizeChange(updateMaximizeIcon);
 
   // Toolbar
   document.getElementById('btn-new').addEventListener('click', () => openModal());
   document.getElementById('btn-theme').addEventListener('click', toggleTheme);
-  searchInput.addEventListener('input', () => render(searchInput.value));
+
+  const debouncedSearch = debounce(() => render(searchInput.value), 120);
+  searchInput.addEventListener('input', debouncedSearch);
 
   // Modal
   document.getElementById('modal-close').addEventListener('click', closeModal);
@@ -214,35 +240,31 @@ function bindEvents() {
   document.getElementById('modal-delete').addEventListener('click', deleteNote);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 
-  // Color picker
+  // Color picker (delegated)
   colorPicker.addEventListener('click', (e) => {
     const dot = e.target.closest('.color-dot');
     if (!dot) return;
-    colorPicker.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    for (const d of colorPicker.querySelectorAll('.color-dot')) d.classList.remove('active');
     dot.classList.add('active');
   });
 
   // Pin (delegated)
   grid.addEventListener('click', (e) => {
     const pinBtn = e.target.closest('.note-pin');
-    if (pinBtn) { e.stopPropagation(); togglePin(pinBtn.dataset.pin); }
+    if (pinBtn) { e.stopPropagation(); togglePin(pinBtn.dataset.pin); return; }
+    const card = e.target.closest('.note-card');
+    if (card) openModal(card.dataset.id);
   });
 
   // Keyboard
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModal();
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !overlay.classList.contains('hidden')) saveNote();
+    if (overlay.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeModal();
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveNote();
   });
 
   // IPC
   window.api.onNewNote(() => openModal());
-}
-
-/* ── Helpers ── */
-function esc(str) {
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
 }
 
 /* ── Start ── */

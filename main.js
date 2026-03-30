@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const DATA_FILE = path.join(app.getPath('userData'), 'notes.json');
+const ICON_PATH = path.join(__dirname, 'assets', 'icon.ico');
 
 let mainWindow = null;
 let tray = null;
@@ -37,20 +38,27 @@ function createWindow() {
     minWidth: 480,
     minHeight: 400,
     frame: false,
-    transparent: false,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#f3f3f3',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    icon: ICON_PATH,
     show: false,
   });
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
+
+  // Notify renderer of maximize state changes
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('window:maximized', true);
+  });
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('window:maximized', false);
+  });
 
   mainWindow.on('close', (e) => {
     if (!app.isQuitting) {
@@ -65,12 +73,24 @@ function createWindow() {
 /* ── Tray ── */
 
 function createTray() {
-  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.ico')).resize({ width: 16, height: 16 });
+  const icon = nativeImage.createFromPath(ICON_PATH).resize({ width: 16, height: 16 });
   tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Open Quick Notes', click: createWindow },
-    { label: 'New Note', click: () => { createWindow(); mainWindow.webContents.send('new-note'); } },
+    {
+      label: 'New Note',
+      click: () => {
+        createWindow();
+        mainWindow.webContents.once('did-finish-load', () => {
+          mainWindow.webContents.send('new-note');
+        });
+        // If already loaded, send immediately
+        if (!mainWindow.webContents.isLoading()) {
+          mainWindow.webContents.send('new-note');
+        }
+      },
+    },
     { type: 'separator' },
     { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } },
   ]);
@@ -90,6 +110,7 @@ ipcMain.on('window:maximize', () => {
   else mainWindow?.maximize();
 });
 ipcMain.on('window:close', () => mainWindow?.close());
+ipcMain.handle('window:isMaximized', () => mainWindow?.isMaximized() ?? false);
 
 /* ── App lifecycle ── */
 
@@ -98,7 +119,9 @@ app.whenReady().then(() => {
   createTray();
   globalShortcut.register('CommandOrControl+Shift+N', () => {
     createWindow();
-    setTimeout(() => mainWindow.webContents.send('new-note'), 300);
+    if (!mainWindow.webContents.isLoading()) {
+      mainWindow.webContents.send('new-note');
+    }
   });
 });
 

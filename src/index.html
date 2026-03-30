@@ -6,7 +6,7 @@
   <title>Quick Notes</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-os="windows" data-theme="light" style="--radius:8px;--radius-sm:6px;">
+<body data-theme="light">
 
   <!-- Custom titlebar -->
   <header id="titlebar">
@@ -24,7 +24,7 @@
       <span>Quick Notes</span>
     </div>
 
-    <!-- Windows controls (hidden on macOS) -->
+    <!-- Window controls -->
     <div class="win-controls">
       <button class="win-btn" id="win-min" title="Minimize">
         <svg viewBox="0 0 10 10"><line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1"/></svg>
@@ -106,5 +106,6 @@
   </div>
 
   <script src="renderer.js"></script>
+  <script>requestAnimationFrame(() => document.body.classList.add('ready'));</script>
 </body>
 </html>
