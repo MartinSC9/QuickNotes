@@ -44,7 +44,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    icon: path.join(__dirname, 'assets', 'icon.png'),
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
     show: false,
   });
 
@@ -65,7 +65,7 @@ function createWindow() {
 /* ── Tray ── */
 
 function createTray() {
-  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png')).resize({ width: 16, height: 16 });
+  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.ico')).resize({ width: 16, height: 16 });
   tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([
