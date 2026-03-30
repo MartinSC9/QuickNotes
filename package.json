@@ -1,0 +1,40 @@
+{
+  "name": "quick-notes",
+  "version": "1.0.0",
+  "description": "Minimal sticky notes for your desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "dev": "electron . --dev"
+  },
+  "author": "CU Digital",
+  "license": "MIT",
+  "devDependencies": {
+    "canvas": "^3.2.2",
+    "electron": "^34.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.cudigital.quicknotes",
+    "productName": "Quick Notes",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png",
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "artifactName": "QuickNotes-Setup-${version}.exe",
+      "shortcutName": "Quick Notes"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*"
+    ]
+  }
+}

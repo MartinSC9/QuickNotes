@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Notes</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-os="windows" data-theme="light" style="--radius:8px;--radius-sm:6px;">
+
+  <!-- Custom titlebar -->
+  <header id="titlebar">
+    <!-- Title (draggable) -->
+    <div class="titlebar-drag">
+      <svg class="titlebar-logo" viewBox="0 0 256 256" fill="none">
+        <defs><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#005fb8"/><stop offset="100%" stop-color="#0078d4"/></linearGradient></defs>
+        <rect width="256" height="256" rx="48" fill="url(#logo-g)"/>
+        <rect x="56" y="50" width="144" height="160" rx="14" fill="#fff" opacity=".15"/>
+        <rect x="56" y="50" width="144" height="160" rx="14" fill="none" stroke="#fff" stroke-width="4" opacity=".3"/>
+        <line x1="86" y1="100" x2="170" y2="100" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        <line x1="86" y1="130" x2="155" y2="130" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+        <line x1="86" y1="160" x2="135" y2="160" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".4"/>
+      </svg>
+      <span>Quick Notes</span>
+    </div>
+
+    <!-- Windows controls (hidden on macOS) -->
+    <div class="win-controls">
+      <button class="win-btn" id="win-min" title="Minimize">
+        <svg viewBox="0 0 10 10"><line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="win-btn" id="win-max" title="Maximize">
+        <svg viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="win-btn win-close" id="win-close" title="Close">
+        <svg viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search notes..." />
+    </div>
+
+    <div class="toolbar-actions">
+      <!-- Theme toggle -->
+      <button class="btn-icon" id="btn-theme" title="Toggle light/dark mode">
+        <svg id="icon-theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
+      </button>
+
+      <div class="toolbar-sep"></div>
+
+      <!-- New note -->
+      <button id="btn-new" title="New note (Ctrl+Shift+N)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>New Note</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Notes grid -->
+  <main id="notes-grid"></main>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="hidden">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+    <p>No notes yet</p>
+    <span>Click <strong>New Note</strong> or press <kbd>Ctrl+Shift+N</kbd></span>
+  </div>
+
+  <!-- Edit modal -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal">
+      <div class="modal-header">
+        <input type="text" id="modal-title" placeholder="Note title..." maxlength="100" />
+        <button class="btn-icon" id="modal-close" title="Close" style="border:none;background:transparent;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <textarea id="modal-content" placeholder="Write something..."></textarea>
+      <div class="modal-footer">
+        <div class="color-picker" id="color-picker"></div>
+        <div class="modal-actions">
+          <button id="modal-delete" class="btn-delete" title="Delete note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Delete
+          </button>
+          <button id="modal-save" class="btn-save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
